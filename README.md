@@ -46,3 +46,60 @@ matPhi <- function(smallphi=NULL, SeasPeriod=NULL, tauS) {
 }
 ##
 
+##
+make_A = function(smallphiS=NULL, SPeriodS=NULL){
+  # r code for the observation matrix
+  adjustPhi = 0
+  numCols = 1 
+  numSeasonal = 0
+  lengthSeasonal = 0
+  smallphi = 0
+  SeasPeriod = 0
+  #
+  if(!is.null(smallphiS)) {
+    smallphi = as.numeric(smallphiS)
+    adjustPhi = 1
+    numCols = numCols + 1
+  }
+  if(!is.null(SPeriodS)) {
+    SeasPeriod = as.integer(SPeriodS)
+    numSeasonal = length(SPeriodS)
+    for(s in 1:numSeasonal) {
+      lengthSeasonal = lengthSeasonal + SeasPeriod[s]
+    }
+    numCols = numCols + lengthSeasonal
+  } else {
+    lengthSeasonal = 0
+  }
+  #
+  mA = matrix(0, nrow = 1, ncol = numCols)
+  #
+  if(!is.null(SPeriodS)) {
+    position = adjustPhi
+    for(s in 1:numSeasonal) {
+      position = position + SeasPeriod[s]
+      mA[1,position] = 1
+    }
+  }
+  #
+  mA[1,1] = 1
+  #
+  if(adjustPhi == 1) {
+    mA[1,2] = smallphi
+  }
+  return(mA)
+}
+##
+##
+insert.diag <- function(matQ, varseas, start=c(1,1), dir=c(1,1)) {
+  # r code for diagonal matrix
+  sq <- seq_along(varseas)-1
+  indices <- sapply(1:2, function(i) start[i] + dir[i]*sq)
+  stopifnot(all(indices>0))
+  stopifnot(all(indices[,1]<=nrow(matQ)))
+  stopifnot(all(indices[,2]<=ncol(matQ)))  
+  #
+  matQ[indices] <- varseas
+  matQ
+}
+
